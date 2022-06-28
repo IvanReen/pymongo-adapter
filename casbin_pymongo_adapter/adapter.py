@@ -35,7 +35,7 @@ class CasbinRule:
         return ", ".join(self.dict().values())
 
     def __repr__(self):
-        return '<CasbinRule :"{}">'.format(str(self))
+        return f'<CasbinRule :"{str(self)}">'
 
 
 class Adapter(persist.Adapter):
@@ -87,21 +87,18 @@ class Adapter(persist.Adapter):
         for index, value in enumerate(rule):
             setattr(line, f"v{index}", value)
 
-        # if rule is empty, do nothing
-        # else find all given rules and delete them
         if len(line.dict()) == 0:
             return 0
-        else:
-            line_dict = line.dict()
-            line_dict_keys_len = len(line_dict)
-            results = self._collection.find(line_dict)
-            to_delete = [
-                result["_id"]
-                for result in results
-                if line_dict_keys_len == len(result.keys()) - 1
-            ]
-            results = self._collection.delete_many({"_id": {"$in": to_delete}})
-            return results.deleted_count
+        line_dict = line.dict()
+        line_dict_keys_len = len(line_dict)
+        results = self._collection.find(line_dict)
+        to_delete = [
+            result["_id"]
+            for result in results
+            if line_dict_keys_len == len(result.keys()) - 1
+        ]
+        results = self._collection.delete_many({"_id": {"$in": to_delete}})
+        return results.deleted_count
 
     def save_policy(self, model) -> bool:
         """Implement add Interface for casbin. Save the policy in mongodb
